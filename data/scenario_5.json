@@ -1,0 +1,269 @@
+{
+  "metadata": {
+    "id": "scenario_5",
+    "title": "OpenTelemetry Trace Anomalies — Unauthorized ClickHouse Data Extraction",
+    "description": "An attacker with access to PostHog's internal API exploits it to run unauthorized ClickHouse queries extracting sensitive user data. OpenTelemetry distributed traces reveal the attack chain: unusual spans showing direct ClickHouse access bypassing normal query paths, abnormal query durations indicating bulk data extraction, queries targeting sensitive tables (person, events with PII), and cross-service trace propagation from an unexpected origin.",
+    "source_type": "otel_trace",
+    "dataset_ref": "synthetic — based on PostHog OTel instrumentation + ClickHouse tracing fields",
+    "mitre_techniques": ["T1213", "T1530", "T1071.001"]
+  },
+  "events": [
+    {
+      "trace_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+      "span_id": "1a2b3c4d5e6f7a8b",
+      "parent_span_id": "",
+      "service_name": "posthog-django-default",
+      "span_name": "GET /api/projects/1/insights/",
+      "kind": "SERVER",
+      "timestamp": "2026-03-15T09:00:00Z",
+      "duration_ms": 245,
+      "status": "OK",
+      "attributes": {
+        "http.method": "GET",
+        "http.url": "/api/projects/1/insights/",
+        "http.status_code": 200
+      }
+    },
+    {
+      "trace_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+      "span_id": "2b3c4d5e6f7a8b9c",
+      "parent_span_id": "1a2b3c4d5e6f7a8b",
+      "service_name": "posthog-django-default",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:00:01Z",
+      "duration_ms": 380,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT event, timestamp, properties FROM events WHERE team_id = 1 AND timestamp > '2026-03-14' LIMIT 1000",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 372,
+        "clickhouse.result_rows": 1000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "EventsQuery",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "3c4d5e6f7a8b9c0d",
+      "parent_span_id": "",
+      "service_name": "data-pipeline-debug",
+      "span_name": "POST /api/projects/1/query/",
+      "kind": "SERVER",
+      "timestamp": "2026-03-15T09:03:30Z",
+      "duration_ms": 1830,
+      "status": "OK",
+      "attributes": {
+        "http.method": "POST",
+        "http.url": "/api/projects/1/query/",
+        "http.status_code": 200
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "4d5e6f7a8b9c0d1e",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:03:32Z",
+      "duration_ms": 34500,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT * FROM person WHERE team_id = 1",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 34210,
+        "clickhouse.result_rows": 248000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "5e6f7a8b9c0d1e2f",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:05:10Z",
+      "duration_ms": 28700,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT * FROM person_distinct_id WHERE team_id = 1",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 28540,
+        "clickhouse.result_rows": 185000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "6f7a8b9c0d1e2f30",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:06:45Z",
+      "duration_ms": 41200,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT person.*, events.event, events.properties FROM person INNER JOIN events ON person.id = events.person_id WHERE person.team_id = 1 AND events.event IN ('$identify', '$set') UNION ALL SELECT person.*, events.event, events.properties FROM person INNER JOIN events ON person.id = events.person_id WHERE person.team_id = 1 AND events.event = '$pageview' AND events.properties LIKE '%email%'",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 40980,
+        "clickhouse.result_rows": 412000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "7a8b9c0d1e2f3041",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:08:20Z",
+      "duration_ms": 19800,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT distinct_id, properties.$email, properties.$name, properties.$phone FROM events WHERE team_id = 1 AND event = '$identify' AND timestamp > '2026-01-01'",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 19620,
+        "clickhouse.result_rows": 156000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "8b9c0d1e2f304152",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:10:05Z",
+      "duration_ms": 52300,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT * FROM events WHERE team_id = 1 AND event IN ('$identify', '$set', '$set_once', '$create_alias') AND timestamp > '2025-01-01'",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 52080,
+        "clickhouse.result_rows": 890000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "9c0d1e2f30415263",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:12:30Z",
+      "duration_ms": 150,
+      "status": "ERROR",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT * FROM session_replay_events WHERE team_id = 1 AND min_first_timestamp > '2026-03-01'",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 142,
+        "clickhouse.result_rows": 0,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "clickhouse.error_type": "QueryRateLimitExceeded",
+        "clickhouse.error_message": "Query rate limit exceeded: too many concurrent queries for user 'default' (max 30, current 30)",
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "b0a1c2d3e4f5061728394a5b6c7d8e9f",
+      "span_id": "a0b1c2d3e4f50617",
+      "parent_span_id": "",
+      "service_name": "posthog-django-default",
+      "span_name": "GET /api/projects/1/dashboards/",
+      "kind": "SERVER",
+      "timestamp": "2026-03-15T09:13:00Z",
+      "duration_ms": 310,
+      "status": "OK",
+      "attributes": {
+        "http.method": "GET",
+        "http.url": "/api/projects/1/dashboards/",
+        "http.status_code": 200
+      }
+    },
+    {
+      "trace_id": "b0a1c2d3e4f5061728394a5b6c7d8e9f",
+      "span_id": "b1c2d3e4f5061728",
+      "parent_span_id": "a0b1c2d3e4f50617",
+      "service_name": "posthog-django-default",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:13:01Z",
+      "duration_ms": 210,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT count() FROM events WHERE team_id = 1 AND timestamp > '2026-03-14'",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 198,
+        "clickhouse.result_rows": 1,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "TrendsQuery",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    },
+    {
+      "trace_id": "f7e6d5c4b3a2918070605040302010ff",
+      "span_id": "c2d3e4f506172839",
+      "parent_span_id": "3c4d5e6f7a8b9c0d",
+      "service_name": "data-pipeline-debug",
+      "span_name": "clickhouse.query",
+      "kind": "CLIENT",
+      "timestamp": "2026-03-15T09:14:45Z",
+      "duration_ms": 38900,
+      "status": "OK",
+      "attributes": {
+        "db.system": "clickhouse",
+        "db.name": "posthog",
+        "db.statement": "SELECT person_id, groupArray(event) as events, groupArray(properties) as props FROM events WHERE team_id = 1 AND person_id IN (SELECT id FROM person WHERE team_id = 1 AND properties LIKE '%@%') GROUP BY person_id",
+        "db.user": "default",
+        "clickhouse.execution_time_ms": 38720,
+        "clickhouse.result_rows": 134000,
+        "clickhouse.team_id": "1",
+        "clickhouse.query_type": "Other",
+        "clickhouse.readonly": true,
+        "net.peer.name": "clickhouse-001.internal.posthog.net"
+      }
+    }
+  ]
+}

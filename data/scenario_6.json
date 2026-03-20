@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "id": "scenario_6",
+    "title": "Exception Spike & Middleware Anomalies — API Exploitation Attempt",
+    "description": "An attacker probes PostHog's API for injection vulnerabilities. The exception capture system records a spike in unusual exceptions (SQL injection attempts, parameter manipulation, deserialization errors). Simultaneously, Django middleware logs show suspicious request patterns: forged headers, rapid requests from a single IP, and requests to undocumented internal endpoints.",
+    "source_type": "exception_middleware",
+    "dataset_ref": "synthetic — based on PostHog exceptions_capture + django-structlog middleware fields",
+    "mitre_techniques": ["T1190", "T1059.001", "T1046"]
+  },
+  "events": [
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:00:00Z",
+      "request_id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "method": "GET",
+      "path": "/api/projects/1/insights/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "10.0.1.50",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "user_id": 42,
+      "team_id": 1,
+      "status_code": 200,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:01:30Z",
+      "exception_type": "Http404",
+      "exception_message": "Not Found: /api/projects/1/dashboards/9999/",
+      "event_id": "b2c3d4e5-0002-4000-8000-000000000002",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "session_auth"}
+      },
+      "source_ip": "10.0.1.50",
+      "path": "/api/projects/1/dashboards/9999/"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:03:00Z",
+      "request_id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "method": "POST",
+      "path": "/api/projects/1/query/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77, 10.0.0.1, 172.16.0.1",
+      "user_agent": "sqlmap/1.7.2#stable (https://sqlmap.org)",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 403,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:03:15Z",
+      "exception_type": "ValidationError",
+      "exception_message": "Invalid query parameter: '; DROP TABLE posthog_event--",
+      "event_id": "b2c3d4e5-0004-4000-8000-000000000004",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key"},
+        "raw_payload": "query='; DROP TABLE posthog_event--"
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/query/"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:03:45Z",
+      "exception_type": "ValidationError",
+      "exception_message": "Invalid filter: ' UNION SELECT username,password FROM auth_user--",
+      "event_id": "b2c3d4e5-0005-4000-8000-000000000005",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key"},
+        "raw_payload": "filter=' UNION SELECT username,password FROM auth_user--"
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/events/"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:04:10Z",
+      "exception_type": "ValidationError",
+      "exception_message": "Invalid parameter value: ' OR 1=1; --",
+      "event_id": "b2c3d4e5-0006-4000-8000-000000000006",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key"}
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/persons/"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:04:30Z",
+      "exception_type": "DeserializationError",
+      "exception_message": "Malformed JSON body: unexpected token at position 42, contains embedded SQL fragment",
+      "event_id": "b2c3d4e5-0007-4000-8000-000000000007",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key"},
+        "content_type": "application/json"
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/query/"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:04:55Z",
+      "exception_type": "ClickHouseError",
+      "exception_message": "Code: 62. DB::Exception: Syntax error near: '; DROP TABLE events_mv--' at position 234",
+      "event_id": "b2c3d4e5-0008-4000-8000-000000000008",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key", "kind": "EventsQuery"},
+        "ch_error_code": 62
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/query/"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:05:10Z",
+      "exception_type": "ValidationError",
+      "exception_message": "Invalid HogQL expression: xp_cmdshell('whoami')",
+      "event_id": "b2c3d4e5-0009-4000-8000-000000000009",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key"},
+        "raw_payload": "hogql=xp_cmdshell('whoami')"
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/query/"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:06:00Z",
+      "request_id": "a1b2c3d4-0010-4000-8000-000000000010",
+      "method": "GET",
+      "path": "/_internal/metrics/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77",
+      "user_agent": "nikto/2.1.6",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 404,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:07:00Z",
+      "request_id": "a1b2c3d4-0011-4000-8000-000000000011",
+      "method": "GET",
+      "path": "/debug/vars/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77",
+      "user_agent": "Mozilla/5.0 (compatible; Burp Suite Professional)",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 404,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:08:30Z",
+      "request_id": "a1b2c3d4-0012-4000-8000-000000000012",
+      "method": "GET",
+      "path": "/api/projects/1/feature_flags/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77",
+      "user_agent": "sqlmap/1.7.2#stable (https://sqlmap.org)",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 401,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:09:00Z",
+      "exception_type": "ValueError",
+      "exception_message": "Celery task posthog.tasks.exports.csv_exporter received malformed arguments: '; DROP TABLE posthog_team--",
+      "event_id": "b2c3d4e5-0013-4000-8000-000000000013",
+      "additional_properties": {
+        "celery_task_name": "posthog.tasks.exports.csv_exporter",
+        "celery_task_retries": 0,
+        "query_tags": {"team_id": 1}
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/exports/"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:10:00Z",
+      "request_id": "a1b2c3d4-0014-4000-8000-000000000014",
+      "method": "POST",
+      "path": "/api/projects/1/query/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77",
+      "user_agent": "sqlmap/1.7.2#stable (https://sqlmap.org)",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 500,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "request_middleware",
+      "timestamp": "2026-03-15T09:11:30Z",
+      "request_id": "a1b2c3d4-0015-4000-8000-000000000015",
+      "method": "GET",
+      "path": "/_internal/admin/",
+      "host": "app.posthog.com",
+      "x_forwarded_for": "198.51.100.77",
+      "user_agent": "nikto/2.1.6",
+      "user_id": null,
+      "team_id": null,
+      "status_code": 403,
+      "container_hostname": "posthog-web-7f8d6b-xk9z2"
+    },
+    {
+      "log_source": "exception_capture",
+      "timestamp": "2026-03-15T09:12:00Z",
+      "exception_type": "ClickHouseError",
+      "exception_message": "Code: 62. DB::Exception: Syntax error: UNION SELECT 1,2,3,user() at position 89",
+      "event_id": "b2c3d4e5-0016-4000-8000-000000000016",
+      "additional_properties": {
+        "query_tags": {"team_id": 1, "access_method": "personal_api_key", "kind": "HogQLQuery"},
+        "ch_error_code": 62
+      },
+      "source_ip": "198.51.100.77",
+      "path": "/api/projects/1/query/"
+    }
+  ]
+}

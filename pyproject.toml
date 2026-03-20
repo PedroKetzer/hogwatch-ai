@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hogwatch-ai"
+version = "0.1.0"
+description = "CLI tool for simulating and investigating security incidents with LLMs"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1",
+    "anthropic>=0.39",
+    "rich>=13.0",
+    "python-dateutil>=2.8",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+hogwatch = "hogwatch_cli.main:cli"
+
+[tool.pytest.ini_options]
+# Use importlib import mode for cleaner test isolation.
+addopts = "--import-mode=importlib"
+
+[tool.setuptools.packages.find]
+include = ["hogwatch_cli*", "core*", "llm*"]

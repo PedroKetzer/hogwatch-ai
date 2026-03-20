@@ -1,0 +1,347 @@
+{
+  "metadata": {
+    "id": "scenario_9",
+    "title": "MCP Service Exploitation — AI Tool Abuse for Data Extraction",
+    "description": "An attacker discovers PostHog's MCP endpoint and abuses it to extract sensitive analytics data. The MCP RequestLogger captures unauthorized access attempts, session hijacking via stolen tokens, rapid-fire tool calls to extract person data, requests with abnormally long durations indicating heavy data extraction, and requests from unexpected origins not matching registered AI assistants.",
+    "source_type": "mcp_service",
+    "dataset_ref": "synthetic — based on PostHog MCP RequestLogger fields",
+    "mitre_techniques": ["T1530", "T1550.001", "T1119", "T1071.001"]
+  },
+  "events": [
+    {
+      "timestamp": "2026-03-19T10:00:00Z",
+      "request_id": "a1b2c3d4",
+      "method": "tools/call",
+      "tool_name": "get_insights",
+      "params": {
+        "project_id": 1,
+        "date_from": "2026-03-18",
+        "date_to": "2026-03-19",
+        "insight_type": "TRENDS"
+      },
+      "status_code": 200,
+      "duration_ms": 320,
+      "response_size_bytes": 4096,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "10.0.1.50",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "claude-desktop/1.2.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:02:00Z",
+      "request_id": "b2c3d4e5",
+      "method": "tools/call",
+      "tool_name": "get_events",
+      "params": {
+        "project_id": 1,
+        "date_from": "2026-03-18",
+        "date_to": "2026-03-19",
+        "event_type": "$pageview",
+        "limit": 100
+      },
+      "status_code": 200,
+      "duration_ms": 540,
+      "response_size_bytes": 12800,
+      "client_id": "cli_cursor_3a2b1c",
+      "client_name": "cursor-ide",
+      "source_ip": "10.0.1.51",
+      "session_token_hash": "ef56gh78",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "cursor-ide/0.42.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:05:00Z",
+      "request_id": "c3d4e5f6",
+      "method": "tools/call",
+      "tool_name": "get_insights",
+      "params": {
+        "project_id": 1,
+        "insight_type": "FUNNELS"
+      },
+      "status_code": 401,
+      "duration_ms": 12,
+      "response_size_bytes": 89,
+      "client_id": "cli_unknown_000000",
+      "client_name": "unknown",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "zz00xx99",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:06:30Z",
+      "request_id": "d4e5f6a7",
+      "method": "tools/call",
+      "tool_name": "get_events",
+      "params": {
+        "project_id": 1,
+        "date_from": "2026-03-18",
+        "date_to": "2026-03-19",
+        "limit": 50
+      },
+      "status_code": 200,
+      "duration_ms": 480,
+      "response_size_bytes": 8200,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:08:00Z",
+      "request_id": "e5f6a7b8",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500
+      },
+      "status_code": 200,
+      "duration_ms": 1200,
+      "response_size_bytes": 98000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:08:20Z",
+      "request_id": "f6a7b8c9",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500,
+        "offset": 500
+      },
+      "status_code": 200,
+      "duration_ms": 1350,
+      "response_size_bytes": 102000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:08:40Z",
+      "request_id": "a7b8c9d0",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500,
+        "offset": 1000
+      },
+      "status_code": 200,
+      "duration_ms": 1100,
+      "response_size_bytes": 97000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:09:00Z",
+      "request_id": "b8c9d0e1",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500,
+        "offset": 1500
+      },
+      "status_code": 200,
+      "duration_ms": 1280,
+      "response_size_bytes": 95000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:09:20Z",
+      "request_id": "c9d0e1f2",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500,
+        "offset": 2000
+      },
+      "status_code": 200,
+      "duration_ms": 1190,
+      "response_size_bytes": 93000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:09:40Z",
+      "request_id": "d0e1f2a3",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id", "properties"],
+        "limit": 500,
+        "offset": 2500
+      },
+      "status_code": 200,
+      "duration_ms": 1150,
+      "response_size_bytes": 91000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:14:00Z",
+      "request_id": "e1f2a3b4",
+      "method": "tools/call",
+      "tool_name": "get_events",
+      "params": {
+        "project_id": 1,
+        "date_from": "2025-01-01",
+        "date_to": "2026-03-19",
+        "event_type": "$identify",
+        "limit": 10000
+      },
+      "status_code": 200,
+      "duration_ms": 45200,
+      "response_size_bytes": 2340000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:16:00Z",
+      "request_id": "f2a3b4c5",
+      "method": "tools/call",
+      "tool_name": "get_team_settings",
+      "params": {
+        "project_id": 1,
+        "include": ["api_keys", "members", "billing"]
+      },
+      "status_code": 403,
+      "duration_ms": 18,
+      "response_size_bytes": 124,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    },
+    {
+      "timestamp": "2026-03-19T10:18:00Z",
+      "request_id": "a3b4c5d6",
+      "method": "tools/call",
+      "tool_name": "get_persons",
+      "params": {
+        "project_id": 1,
+        "fields": ["email", "distinct_id"],
+        "limit": 5000,
+        "offset": 0
+      },
+      "status_code": 200,
+      "duration_ms": 38500,
+      "response_size_bytes": 1870000,
+      "client_id": "cli_claude_9f8e7d",
+      "client_name": "claude-desktop",
+      "source_ip": "198.51.100.42",
+      "session_token_hash": "ab12cd34",
+      "headers_redacted": {
+        "authorization": "[REDACTED]",
+        "x-api-key": "[REDACTED]",
+        "content-type": "application/json",
+        "user-agent": "python-requests/2.31.0"
+      },
+      "team_id": 1
+    }
+  ]
+}

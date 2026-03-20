@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+.claude/
+Security-Datasets/
+posthog/
+output/*.md
+!output/.gitkeep

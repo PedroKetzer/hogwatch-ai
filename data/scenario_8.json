@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "id": "scenario_8",
+    "title": "Prometheus Metrics Anomalies — Credential Stuffing & Cryptomining",
+    "description": "An attacker performs a credential-stuffing attack against PostHog's API, then escalates to data exfiltration and deploys a cryptominer sidecar. Prometheus metrics reveal the attack through quantitative anomalies: sudden spike in HTTP 401/403 responses, abnormal outbound network bytes, Celery task queue explosion, ClickHouse query duration spike, and CPU/memory/disk anomalies on a compromised pod.",
+    "source_type": "prometheus_metrics",
+    "dataset_ref": "synthetic — based on PostHog Prometheus/django-prometheus metrics",
+    "mitre_techniques": ["T1110.004", "T1496", "T1041", "T1053.005"]
+  },
+  "events": [
+    {
+      "metric_name": "http_requests_total",
+      "labels": {
+        "job": "posthog-web",
+        "instance": "posthog-web-7b9d5c6f4-xk2mv:8000",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "method": "GET",
+        "status": "200",
+        "endpoint": "/api/projects/"
+      },
+      "value": 205,
+      "baseline_value": 200,
+      "anomaly_ratio": 1.025,
+      "window_seconds": 60,
+      "alert_name": "",
+      "severity_label": "none",
+      "timestamp": "2026-03-19T10:00:00Z"
+    },
+    {
+      "metric_name": "http_requests_total",
+      "labels": {
+        "job": "posthog-web",
+        "instance": "posthog-web-7b9d5c6f4-xk2mv:8000",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "method": "POST",
+        "status": "401",
+        "endpoint": "/api/login/"
+      },
+      "value": 150,
+      "baseline_value": 5,
+      "anomaly_ratio": 30.0,
+      "window_seconds": 60,
+      "alert_name": "HighAuthFailureRate",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:03:00Z"
+    },
+    {
+      "metric_name": "http_requests_total",
+      "labels": {
+        "job": "posthog-web",
+        "instance": "posthog-web-7b9d5c6f4-xk2mv:8000",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "method": "POST",
+        "status": "403",
+        "endpoint": "/api/login/"
+      },
+      "value": 87,
+      "baseline_value": 3,
+      "anomaly_ratio": 29.0,
+      "window_seconds": 60,
+      "alert_name": "HighAuthFailureRate",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:04:00Z"
+    },
+    {
+      "metric_name": "posthog_rate_limit_exceeded_total",
+      "labels": {
+        "job": "posthog-web",
+        "instance": "posthog-web-7b9d5c6f4-xk2mv:8000",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "scope": "burst",
+        "endpoint": "/api/login/"
+      },
+      "value": 80,
+      "baseline_value": 2,
+      "anomaly_ratio": 40.0,
+      "window_seconds": 60,
+      "alert_name": "RateLimitExceeded",
+      "severity_label": "warning",
+      "timestamp": "2026-03-19T10:06:00Z"
+    },
+    {
+      "metric_name": "container_network_transmit_bytes_total",
+      "labels": {
+        "job": "kubelet",
+        "instance": "node-03:10250",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "interface": "eth0"
+      },
+      "value": 2147483648,
+      "baseline_value": 52428800,
+      "anomaly_ratio": 40.96,
+      "window_seconds": 60,
+      "alert_name": "HighNetworkEgress",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:10:00Z"
+    },
+    {
+      "metric_name": "clickhouse_query_duration_seconds",
+      "labels": {
+        "job": "clickhouse",
+        "instance": "clickhouse-0:9363",
+        "pod": "clickhouse-0",
+        "namespace": "posthog",
+        "quantile": "0.99"
+      },
+      "value": 45.2,
+      "baseline_value": 0.5,
+      "anomaly_ratio": 90.4,
+      "window_seconds": 60,
+      "alert_name": "ClickHouseSlowQueries",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:12:00Z"
+    },
+    {
+      "metric_name": "celery_task_queue_length",
+      "labels": {
+        "job": "celery-exporter",
+        "instance": "celery-exporter-0:9808",
+        "pod": "celery-exporter-0",
+        "namespace": "posthog",
+        "queue": "default"
+      },
+      "value": 5000,
+      "baseline_value": 50,
+      "anomaly_ratio": 100.0,
+      "window_seconds": 60,
+      "alert_name": "CeleryQueueBacklog",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:15:00Z"
+    },
+    {
+      "metric_name": "container_cpu_usage_seconds_total",
+      "labels": {
+        "job": "kubelet",
+        "instance": "node-03:10250",
+        "pod": "posthog-worker-5f8c9a3b2-mining",
+        "namespace": "posthog",
+        "container": "posthog-worker"
+      },
+      "value": 7.8,
+      "baseline_value": 0.5,
+      "anomaly_ratio": 15.6,
+      "window_seconds": 60,
+      "alert_name": "HighCPUUsage",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:18:00Z"
+    },
+    {
+      "metric_name": "container_memory_working_set_bytes",
+      "labels": {
+        "job": "kubelet",
+        "instance": "node-03:10250",
+        "pod": "posthog-worker-5f8c9a3b2-mining",
+        "namespace": "posthog",
+        "container": "posthog-worker"
+      },
+      "value": 15032385536,
+      "baseline_value": 536870912,
+      "anomaly_ratio": 27.99,
+      "window_seconds": 60,
+      "alert_name": "HighMemoryUsage",
+      "severity_label": "critical",
+      "timestamp": "2026-03-19T10:19:00Z"
+    },
+    {
+      "metric_name": "container_fs_writes_bytes_total",
+      "labels": {
+        "job": "kubelet",
+        "instance": "node-03:10250",
+        "pod": "posthog-worker-5f8c9a3b2-mining",
+        "namespace": "posthog",
+        "container": "posthog-worker",
+        "device": "/dev/sda1"
+      },
+      "value": 5368709120,
+      "baseline_value": 104857600,
+      "anomaly_ratio": 51.2,
+      "window_seconds": 60,
+      "alert_name": "HighDiskIO",
+      "severity_label": "warning",
+      "timestamp": "2026-03-19T10:20:00Z"
+    },
+    {
+      "metric_name": "http_requests_total",
+      "labels": {
+        "job": "posthog-web",
+        "instance": "posthog-web-7b9d5c6f4-xk2mv:8000",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "method": "POST",
+        "status": "401",
+        "endpoint": "/api/login/"
+      },
+      "value": 8,
+      "baseline_value": 5,
+      "anomaly_ratio": 1.6,
+      "window_seconds": 60,
+      "alert_name": "",
+      "severity_label": "none",
+      "timestamp": "2026-03-19T10:25:00Z"
+    },
+    {
+      "metric_name": "container_network_transmit_bytes_total",
+      "labels": {
+        "job": "kubelet",
+        "instance": "node-03:10250",
+        "pod": "posthog-web-7b9d5c6f4-xk2mv",
+        "namespace": "posthog",
+        "interface": "eth0"
+      },
+      "value": 55574528,
+      "baseline_value": 52428800,
+      "anomaly_ratio": 1.06,
+      "window_seconds": 60,
+      "alert_name": "",
+      "severity_label": "none",
+      "timestamp": "2026-03-19T10:28:00Z"
+    }
+  ]
+}

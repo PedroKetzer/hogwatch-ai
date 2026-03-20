@@ -1,0 +1,263 @@
+{
+  "metadata": {
+    "id": "scenario_10",
+    "title": "HogQL Injection — Query Manipulation for Data Exfiltration",
+    "description": "An attacker with API access discovers a HogQL injection vulnerability in a custom insight endpoint. They probe with malformed queries to trigger parser errors, then craft injection payloads that bypass input sanitization to extract data from sensitive tables (person, person_distinct_id). The attack progresses from reconnaissance (error-based probing) through exploitation (injected UNION SELECT) to exfiltration (bulk person data extraction via crafted HogQL expressions). Logged via PostHog's structlog query execution and ClickHouse query_log_archive.",
+    "source_type": "hogql_query",
+    "dataset_ref": "synthetic — based on PostHog HogQL parser (posthog/hogql/parser.py), QueryTags (posthog/clickhouse/query_tagging.py), and query_log_archive schema",
+    "mitre_techniques": ["T1190", "T1059.009", "T1005", "T1530"]
+  },
+  "events": [
+    {
+      "timestamp": "2026-03-20T11:00:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-a1b2c3d4",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00001"
+      },
+      "hogql_query": "SELECT count() FROM events WHERE event = 'pageview'",
+      "status": "ok",
+      "query_duration_ms": 120,
+      "read_rows": 15000,
+      "result_rows": 1,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:02:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-b2c3d4e5",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00002"
+      },
+      "hogql_query": "SELECT count() FROM events WHERE properties.$current_url = ''",
+      "status": "error",
+      "exception_type": "HogQLException",
+      "exception_message": "Syntax error at position 62: unexpected token '",
+      "query_duration_ms": 3,
+      "read_rows": 0,
+      "result_rows": 0,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:02:30Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-c3d4e5f6",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00003"
+      },
+      "hogql_query": "SELECT count() FROM events WHERE properties.$current_url = '' OR '1'='1'",
+      "status": "error",
+      "exception_type": "HogQLException",
+      "exception_message": "Syntax error at position 62: mismatched input 'OR'",
+      "query_duration_ms": 2,
+      "read_rows": 0,
+      "result_rows": 0,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:03:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-d4e5f6a7",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00004"
+      },
+      "hogql_query": "SELECT count() FROM events WHERE event = 'x' UNION ALL SELECT count() FROM person",
+      "status": "error",
+      "exception_type": "HogQLException",
+      "exception_message": "Access to table 'person' not permitted in this context",
+      "query_duration_ms": 5,
+      "read_rows": 0,
+      "result_rows": 0,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:05:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-e5f6a7b8",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00005"
+      },
+      "hogql_query": "SELECT properties.$browser, count() FROM events GROUP BY properties.$browser ORDER BY count() DESC",
+      "status": "ok",
+      "query_duration_ms": 340,
+      "read_rows": 250000,
+      "result_rows": 85,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:06:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-f6a7b8c9",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00006",
+        "timings": {
+          "parse_select_cpp-json": 0.0034,
+          "replace_placeholders": 0.0002,
+          "resolve_types": 0.0089
+        }
+      },
+      "hogql_query": "SELECT distinct_id, properties.$email, properties.$name FROM events WHERE event = '$identify' AND properties.$email != ''",
+      "status": "ok",
+      "query_duration_ms": 1850,
+      "read_rows": 520000,
+      "result_rows": 12400,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:07:30Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-a7b8c9d0",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00007",
+        "timings": {
+          "parse_select_cpp-json": 0.0041,
+          "replace_placeholders": 0.0001,
+          "resolve_types": 0.0102
+        }
+      },
+      "hogql_query": "SELECT distinct_id, properties.$email, properties.$phone, properties.$ip, properties.$geoip_city_name FROM events WHERE event = '$identify' AND properties.$phone != ''",
+      "status": "ok",
+      "query_duration_ms": 2400,
+      "read_rows": 520000,
+      "result_rows": 8700,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:09:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-b8c9d0e1",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00008",
+        "timings": {
+          "parse_select_cpp-json": 0.0028,
+          "replace_placeholders": 0.0001,
+          "resolve_types": 0.0076
+        }
+      },
+      "hogql_query": "SELECT person_id, groupArray(distinct_id), any(properties.$email), any(properties.$phone) FROM events WHERE event = '$identify' GROUP BY person_id HAVING any(properties.$email) != ''",
+      "status": "ok",
+      "query_duration_ms": 4200,
+      "read_rows": 520000,
+      "result_rows": 11200,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:11:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-c9d0e1f2",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00009",
+        "timings": {
+          "parse_select_cpp-json": 0.0052,
+          "replace_placeholders": 0.0003,
+          "resolve_types": 0.0134
+        }
+      },
+      "hogql_query": "SELECT person_id, groupArray(distinct_id), any(properties.$email), any(properties.$phone), any(properties.$ip), any(properties.$geoip_country_name), count() AS event_count FROM events GROUP BY person_id HAVING event_count > 10 ORDER BY event_count DESC LIMIT 50000",
+      "status": "ok",
+      "query_duration_ms": 8500,
+      "read_rows": 2100000,
+      "result_rows": 50000,
+      "http_user_agent": "python-requests/2.31.0"
+    },
+    {
+      "timestamp": "2026-03-20T11:14:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "query_tag": {
+        "kind": "request",
+        "id": "req-d0e1f2a3",
+        "team_id": 1,
+        "user_id": 42,
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...v8Qm",
+        "query_type": "HogQLQuery",
+        "product": "api",
+        "client_query_id": "cq-00010",
+        "timings": {
+          "parse_select_cpp-json": 0.0061,
+          "replace_placeholders": 0.0004,
+          "resolve_types": 0.0198
+        }
+      },
+      "hogql_query": "SELECT person_id, groupArray(distinct_id), any(properties.$email), any(properties.$phone), any(properties.$ip), any(properties.$initial_referring_domain), any(properties.$browser), any(properties.$os), any(properties.$geoip_country_name), any(properties.$geoip_city_name), min(timestamp) AS first_seen, max(timestamp) AS last_seen, count() AS event_count FROM events GROUP BY person_id ORDER BY event_count DESC LIMIT 100000",
+      "status": "ok",
+      "query_duration_ms": 14200,
+      "read_rows": 2100000,
+      "result_rows": 100000,
+      "http_user_agent": "python-requests/2.31.0"
+    }
+  ]
+}

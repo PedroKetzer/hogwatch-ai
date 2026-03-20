@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "id": "scenario_2",
+    "title": "PostHog API Key Compromise",
+    "description": "An attacker finds a PostHog PersonalAPIKey in a public GitHub commit. They use it from a foreign IP to probe the API, escalate the key's scope, query sensitive person data, and create a batch export to an external S3 bucket they control.",
+    "source_type": "posthog_mixed",
+    "inspired_by": "GoldenSAMLADFSMailAccess",
+    "mitre_techniques": ["T1552", "T1098", "T1530", "T1537"]
+  },
+  "events": [
+    {
+      "timestamp": "2026-03-11T14:00:00Z",
+      "source": "activity_log",
+      "activity": "login",
+      "scope": "User",
+      "detail": {
+        "ip": "203.0.113.10",
+        "user_agent": "python-requests/2.28.1",
+        "access_method": "personal_api_key",
+        "api_key_mask": "phx_...k9Zm",
+        "user_email": "dev@example.com"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:02:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "path": "/api/projects/1/events/",
+      "query_tag": {
+        "kind": "EventsQuery",
+        "access_method": "personal_api_key",
+        "product": "api",
+        "team_id": 1,
+        "query_type": "events_list",
+        "client_ip": "203.0.113.10"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:05:00Z",
+      "source": "rate_limit",
+      "event": "rate_limit_exceeded",
+      "scope": "burst",
+      "path": "/api/projects/1/events/",
+      "detail": {
+        "count": 847,
+        "baseline": 80,
+        "throttle_class": "BurstRateThrottle",
+        "client_ip": "203.0.113.10"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:08:00Z",
+      "source": "activity_log",
+      "activity": "updated",
+      "scope": "PersonalAPIKey",
+      "detail": {
+        "changes": [
+          {
+            "field": "scopes",
+            "before": ["query:read"],
+            "after": ["*"]
+          }
+        ],
+        "api_key_mask": "phx_...k9Zm",
+        "user_email": "dev@example.com"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:12:00Z",
+      "source": "structlog",
+      "event": "query_executed",
+      "path": "/api/projects/1/persons/",
+      "query_tag": {
+        "kind": "PersonsQuery",
+        "access_method": "personal_api_key",
+        "product": "api",
+        "team_id": 1,
+        "filter": "$distinct_id",
+        "client_ip": "203.0.113.10"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:15:00Z",
+      "source": "activity_log",
+      "activity": "created",
+      "scope": "BatchExport",
+      "detail": {
+        "destination_type": "S3",
+        "bucket_name": "attacker-bucket-ext",
+        "region": "eu-west-1",
+        "prefix": "exfil/",
+        "user_email": "dev@example.com"
+      }
+    },
+    {
+      "timestamp": "2026-03-11T14:18:00Z",
+      "source": "activity_log",
+      "activity": "started",
+      "scope": "BatchExportRun",
+      "detail": {
+        "rows_exported": 50000,
+        "destination": "s3://attacker-bucket-ext/exfil/",
+        "user_email": "dev@example.com"
+      }
+    }
+  ]
+}
